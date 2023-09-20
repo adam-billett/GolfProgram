@@ -1,0 +1,41 @@
+[
+ {
+  "date": "1-1-1",
+  "course": "ccn",
+  "holes": {
+   "1": {
+    "score": 4,
+    "par": 5,
+    "under_or_over": -1,
+    "status": "-1 under par"
+   }
+  },
+  "total_diff": -1
+ },
+ {
+  "date": "2-2-2",
+  "course": "ccn",
+  "holes": {
+   "1": {
+    "score": 4,
+    "par": 5,
+    "under_or_over": -1,
+    "status": "-1 under par"
+   }
+  },
+  "total_diff": -1
+ },
+ {
+  "date": "3-3-3",
+  "course": "ccn",
+  "holes": {
+   "1": {
+    "score": 4,
+    "par": 3,
+    "under_or_over": 1,
+    "status": "1 over par"
+   }
+  },
+  "total_diff": 1
+ }
+]
