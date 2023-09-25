@@ -1,222 +1,164 @@
-import json
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import ttk
 
 import customtkinter as ctk
+import psycopg2
+
+
 class GolfApp:
-    def __init__(self):
-        self.users = {}
-        self.score_history = []
-        self.load_history()
-        self.load_users()
+    def __init__(self, app):
+        ctk.set_appearance_mode("dark")
 
-    def load_history(self):
+        self.app = app
+        self.app.geometry("200x200")
+        self.app.title("Golf")
+
+        self.login_menu()
+
+
+    # attempt a connection with the DB
         try:
-            with open("history.json", "r") as file:
-                self.score_history = json.load(file)
-        except FileNotFoundError:
-            self.score_history = []
+            self.connection = psycopg2.connect(
+                dbname="GolfApp",
+                user="postgres",
+                password="Bearcat",
+                host="localhost",
+                port="5432"
+            )
+            self.cursor = self.connection.cursor()
+        except psycopg2.Error as e:
+            messagebox.showerror("Error", str(e))
 
-    def save_history(self):
-        with open("history.json", "w") as file:
-            json.dump(self.score_history, file, indent=1)
+        self.create_tables()
 
-    def load_users(self):
-        try:
-            with open("users.json", "r") as file:
-                self.users = json.load(file)
-        except FileNotFoundError:
-            self.users = {}
+            # SQL TABLE INITIATE
+    def create_tables(self):
+        self.cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS users (
+                        user_id SERIAL PRIMARY KEY,
+                        username VARCHAR,
+                        password VARCHAR,
+                        full_name VARCHAR,
+                        connections VARCHAR,
+                        created_at TIMESTAMP
+                        )
+                    ''')
 
-    def save_users(self):
-        with open("users.json", "w") as file:
-            json.dump(self.users, file, default=str)
+        self.cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS courses (
+                        course_id SERIAL PRIMARY KEY,
+                        course_name VARCHAR,
+                        location VARCHAR,
+                        rates BIGINT,
+                        par INT,
+                        tee_times BIGINT
+                        )
+                    ''')
+
+        self.cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS rounds (
+                        round_id SERIAL PRIMARY KEY,
+                        course_id INT REFERENCES courses(course_id),
+                        user_id INT REFERENCES users(user_id),
+                        holes_played INT,
+                        score INT,
+                        par INT,
+                        difference INT
+                    )
+                ''')
+
+        self.cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS monitor (
+                        session_id SERIAL PRIMARY KEY,
+                        user_id INT REFERENCES users(user_id),
+                        club_speed BIGINT,
+                        ball_speed BIGINT,
+                        spin_rate BIGINT,
+                        carry BIGINT,
+                        total BIGINT,
+                        smash_factor BIGINT,
+                        launch_angle BIGINT                           
+                    )
+                ''')
+
+        self.cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS fitness (
+                    exercise_id SERIAL PRIMARY KEY,
+                    user_id INT REFERENCES users(user_id),
+                    sets INT,
+                    reps INT,
+                    type VARCHAR,
+                    completed boolean
+                    )
+                ''')
+
+        self.connection.commit()
+
+    def on_close(self): # Method for all .protocols on new windows
+        self.app.quit()
 
     def login_menu(self):
+        # withdrawing the root frame then creating a new window
+        self.login_window = ctk.CTkToplevel(self.app)
+        # setting the title size and a protocol for the new window
+        self.login_window.title("Login")
+        self.login_window.geometry("325x375")
+        self.login_window.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.app.withdraw()
 
-        print("1. Login")
-        print("2. Create account")
-        print("3. Exit")
+        # Creating a frame inside the window
+        self.login_frame = ctk.CTkFrame(master=self.login_window)
+        self.login_frame.pack(pady=20, padx=40, fill='both', expand=True)
 
-    def main_menu(self):
-        # Ideas for more features for app go here
-        # Home page to display golf news.
+        # Username entry box
+        self.username = ctk.CTkEntry(self.login_frame, placeholder_text="Username")
+        self.username.pack(pady=12, padx=10)
 
-        print("1. Play golf")
-        print("2. History")
-        print("3. Launch Monitor")
-        print("4. Swing Analysis")
-        print("5. Fitness")
-        print("6. Game Insights")
-        print("7. Exit")
+        # Password entry box
+        self.password = ctk.CTkEntry(self.login_frame, placeholder_text="Password")
+        self.password.pack(pady=12, padx=10)
 
-    def play_golf(self):
-        # track score and shots
-        # course info and gps as well as mapping
-        date = input("Enter the date (MM-DD-YY): ")
-        course = input("Enter the course: ")
-        num_holes = int(input("Numbers of holes: "))
+        # Login button
+        self.login_btn = ctk.CTkButton(self.login_frame, text='Login', command=self.login)
+        self.login_btn.pack(pady=12, padx=10)
 
-        round_scores = {"date": date,
-                        "course": course,
-                        "holes": {}
-                        }
-        total_diff = 0
-        total_par = 0
-        total_score = 0
+        # Create a user button
+        self.create_btn = ctk.CTkButton(self.login_frame, text='Create User')
+        self.create_btn.pack(pady=12, padx=10)
 
-        for hole in range(1, num_holes + 1):
-            par = int(input(f"Enter the par for hole {hole}: "))
-            score = int(input(f"Enter score for hole {hole}: "))
+    def login(self): # Method to login
+        username = self.username.get()
+        password = self.password.get()
 
-            under_or_over = score - par
-            total_diff += under_or_over
-            total_par += par
-            total_score += score
-
-            if total_par > total_score:
-                round_scores["holes"][hole] = {
-                    "score": score,
-                    "par": par,
-                    "under_or_over": under_or_over,
-                    "status": f"{under_or_over} under par"
-                }
-                print(f"You are now {total_diff} under par")
-            elif total_par < total_score:
-                round_scores["holes"][hole] = {
-                    "score": score,
-                    "par": par,
-                    "under_or_over": under_or_over,
-                    "status": f"{abs(under_or_over)} over par"
-                }
-                print(f"You are now {total_diff} over par")
-            else:
-                round_scores["holes"][hole] = {
-                    "score": score,
-                    "par": par,
-                    "under_or_over": under_or_over,
-                    "status": "Even par"
-                }
-                print("You are even par")
-
-        round_scores["total_diff"] = total_diff
-        self.score_history.append(round_scores)
-        self.save_history()
-        print("Scorecard Saved")
-    def display_history(self):
-        search_date = input("Enter the date of the round: ")
-        found_round = None
-
-        for round in self.score_history:
-            if round['date'] == search_date:
-                found_round = round
-                break
-        if found_round:
-            print(f"Date: {found_round['date']}, Course: {found_round['course']}")
-            print("Hole Scores:")
-            for hole, data in found_round['holes'].items():
-                par = data['par']
-                score = data['score']
-                under_or_over = data['under_or_over']
-
-                if under_or_over > 0:
-                    par_status = f"{under_or_over} over par"
-                elif under_or_over < 0:
-                    par_status = f"{abs(under_or_over)} under par"
-                else:
-                    par_status = "Even par"
-
-                print(f"Hole {hole} Par: {par}, Score: {score}, {par_status}")
-
-            if found_round['total_diff'] > 0:
-                print(f"{found_round['total_diff']} over par")
-            elif found_round['total_diff'] < 0:
-                print(f"{found_round['total_diff']} under par")
-            else:
-                print("Even par")
-        else:
-            print(f"No round found for the date: {search_date}")
-
-    def launch_monitor(self):
-        pass
-
-    def swing_analysis(self):
-        pass
-
-    def fitness(self):
-        # workout golf related
-        # diet
-        pass
-
-    def game_insights(self):
-        # tips and tricks
-        # personal data on improvements
-        pass
-
-    def login(self):
-        username = input("Enter username: ")
-        password = input("Enter password: ")
-
-        if username in self.users and self.users[username] == password:
-            print("Login successful.")
-            self.load_history()
-            return True
-            # code for after login actions goes here
-        else:
-            print("Invalid username or password.")
-
-    def create(self):
-        username = input("Please enter username: ")
-        if username in self.users:
-            print("Username already exists. Please choose another")
+        if not username or not password:
+            messagebox.showerror("Missing Info, try again")
             return
 
-        password = input("Enter a password: ")
-        self.users[username] = password
-        self.save_users()
-        print("Account created successfully.")
+        try:
+            self.cursor.execute("SELECT password FROM users WHERE username = %s",
+                                (username,))
+            db_password = self.cursor.fetchone()
 
-    def exit(self):
-        print("Have a nice day!")
-        exit()
+            if db_password and db_password[0] == password:
+                self.current_user = username
+                self.app.withdraw()
+                self.password.delete(0, tk.END)
 
-    def go_back(self):
-        exit()
+                self.main_menu(username)
 
-    def run(self):
-        while True:
-            self.login_menu()
-            choice = input("Select option: ")
-
-            if choice == '1':
-                if self.login():
-                    while True:
-                        self.main_menu()
-                        choice1 = input("Select option: ")
-
-                        if choice1 == '1':
-                            self.play_golf()
-                        elif choice1 == '2':
-                            self.display_history()
-                        elif choice1 == '3':
-                            self.launch_monitor()
-                        elif choice1 == '4':
-                            self.swing_analysis()
-                        elif choice1 == '5':
-                            self.fitness()
-                        elif choice1 == '6':
-                            self.game_insights()
-                        elif choice1 == '7':
-                            self.go_back()
-                        else:
-                            print("Invalid option")
-
-            elif choice == '2':
-                self.create()
-            elif choice == '3':
-                self.exit()
-                break
             else:
-                print("Invalid choice. Select one of the options displayed.")
+                messagebox.showerror("Invalid username or password")
+
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
 
-golf_app = GolfApp()
-golf_app.run()
+
+def main():
+    golf = ctk.CTk()
+    app = GolfApp(golf)
+    golf.mainloop()
+
+if __name__ == "__main__":
+    main()
