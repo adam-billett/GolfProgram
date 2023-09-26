@@ -89,3 +89,42 @@ class DatabaseManager:
                 ''')
 
         self.connection.commit()
+
+    # Login method with logic to ensure they are a user
+    def login(self, username, password):
+        try:
+            self.cursor.execute("SELECT password FROM users WHERE username = %s",
+                                (username,))
+            db_password = self.cursor.fetchone()
+
+            if db_password and db_password[0] == password:
+                return True  # Login successful
+            else:
+                return False  # Login failed
+
+        except psycopg2.Error as e:
+            messagebox.showerror("Error", str(e))
+            return False  # Login Failed
+
+    # Create method database side
+    def create(self, username, password, confirm, name):
+        self.cursor.execute("SELECT username FROM users WHERE username = %s",
+                            (username,))
+        existing_user = self.cursor.fetchone()  # grabbing a user if one exists
+
+        if existing_user:  # checking to see if that username is taken
+            messagebox.showerror("Username already exists")
+            return False
+
+        if password != confirm:
+            messagebox.showerror("Passwords do not match")
+
+            return False
+
+        self.cursor.execute("INSERT INTO users (username, password, confirm_pass, full_name, connections, created_at) "
+                            "VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)",
+                            (username, password, confirm, name, "None"))
+        self.connection.commit()
+
+        return True  # Creation successful
+
