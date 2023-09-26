@@ -231,6 +231,46 @@ class GolfApp:
         self.create_frame.withdraw()
         self.login_menu()
 
+        # MAIN MENU
+
+    def main_menu(self, current_user):
+        self.login_window.withdraw()
+
+        self.main_frame = ctk.CTkToplevel(self.app)
+        self.main_frame.title("Golf Now")
+        self.main_frame.geometry("500x500")
+        self.main_frame.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # Play golf Button
+        self.play = ctk.CTkButton(self.main_frame, text="Play Golf")
+        self.play.pack(pady=8, padx=4)
+
+        # Check past rounds of golf button
+        self.history = ctk.CTkButton(self.main_frame, text="History")
+        self.history.pack(pady=8, padx=4)
+
+        # Golf Simulator button
+        self.launch = ctk.CTkButton(self.main_frame, text="Golf Simulator")
+        self.launch.pack(pady=8, padx=4)
+
+        # Swing analysis button
+        self.analysis = ctk.CTkButton(self.main_frame, text="Swing Analysis")
+        self.analysis.pack(pady=8, padx=4)
+
+        # Fitness button
+        self.fitness = ctk.CTkButton(self.main_frame, text="Fitness")
+        self.fitness.pack(pady=8, padx=4)
+
+        # Game insights/tips button
+        self.tips = ctk.CTkButton(self.main_frame, text="Game Insights")
+        self.tips.pack(pady=8, padx=4)
+
+        # Exit button
+        self.exit = ctk.CTkButton(self.main_frame, text="Exit")
+        self.exit.pack(pady=8, padx=4)
+
+
+
 
 def main():
     golf = ctk.CTk()
