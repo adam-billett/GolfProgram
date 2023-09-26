@@ -13,6 +13,11 @@ class GUIManager:
     def on_close(self):  # Method for all .protocols on new windows
         self.app.quit()
 
+    def back_to_login(self):  # Back to the login screen after the user creates a new user
+        if self.create_frame:
+            self.create_frame.withdraw()
+        self.initialize_gui()
+
     # Login menu (The first window to show)
     def initialize_gui(self):
 
@@ -53,10 +58,21 @@ class GUIManager:
             messagebox.showerror("Missing Info", "Username or password is missing")
             return
 
-        if self.db_manager.login(username, password):
-            # Login successful
-            self.main_menu()
-            pass
+        user_info = self.db_manager.login(username, password)
+        if user_info is not None:
+            # Login Successful
+            self.current_user_role = user_info
+            print(self.current_user_role)
+            if self.current_user_role == "admin":
+                messagebox.showinfo("Welcome admin")
+                # Display admin menu
+                pass
+            elif self.current_user_role == "user":
+                messagebox.showinfo("Welcome user")
+                pass
+                # Display users menu
+            else:
+                messagebox.showerror("Error", "You have no role")
         else:
             # Login Fail
             self.password.delete(0, tk.END)
@@ -151,10 +167,11 @@ class GUIManager:
         self.tips.pack(pady=8, padx=4)
 
         # Exit button
-        self.exit = ctk.CTkButton(self.main_frame, text="Exit")
-        self.exit.pack(pady=8, padx=4)
+        self.logout_btn = ctk.CTkButton(self.main_frame, text="Logout", command=self.logout)
+        self.logout_btn.pack(pady=8, padx=4)
 
-    def back_to_login(self):
-        if self.create_frame:
-            self.create_frame.withdraw()
+    # Method to logout from the program
+    def logout(self):
+        self.main_frame.withdraw()
+
         self.initialize_gui()

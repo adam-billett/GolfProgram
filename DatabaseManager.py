@@ -33,10 +33,11 @@ class DatabaseManager:
                         user_id SERIAL PRIMARY KEY,
                         username VARCHAR,
                         password VARCHAR,
+                        role VARCHAR,
                         confirm_pass VARCHAR,
                         full_name VARCHAR,
                         connections VARCHAR,
-                        created_at TIMESTAMP
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                         )
                     ''')
 
@@ -93,18 +94,19 @@ class DatabaseManager:
     # Login method with logic to ensure they are a user
     def login(self, username, password):
         try:
-            self.cursor.execute("SELECT password FROM users WHERE username = %s",
-                                (username,))
-            db_password = self.cursor.fetchone()
+            self.cursor.execute("SELECT password, role FROM users WHERE username = %s AND password = %s",
+                                (username, password))
+            result = self.cursor.fetchone()
 
-            if db_password and db_password[0] == password:
-                return True  # Login successful
-            else:
-                return False  # Login failed
+            if result:
+                role = result
+                return role  # Login Successful
+
+            return None  # Login Failed
 
         except psycopg2.Error as e:
             messagebox.showerror("Error", str(e))
-            return False  # Login Failed
+            return None  # Login Failed
 
     # Create method database side
     def create(self, username, password, confirm, name):
