@@ -8,6 +8,7 @@ import psycopg2
 
 class GolfApp:
     def __init__(self, app):
+        self.datetime = None
         ctk.set_appearance_mode("dark")
 
         self.app = app
@@ -16,8 +17,7 @@ class GolfApp:
 
         self.login_menu()
 
-
-    # attempt a connection with the DB
+        # attempt a connection with the DB
         try:
             self.connection = psycopg2.connect(
                 dbname="GolfApp",
@@ -32,13 +32,15 @@ class GolfApp:
 
         self.create_tables()
 
-            # SQL TABLE INITIATE
+        # SQL TABLE INITIATE
+
     def create_tables(self):
         self.cursor.execute('''
                     CREATE TABLE IF NOT EXISTS users (
                         user_id SERIAL PRIMARY KEY,
                         username VARCHAR,
                         password VARCHAR,
+                        confirm_pass VARCHAR,
                         full_name VARCHAR,
                         connections VARCHAR,
                         created_at TIMESTAMP
@@ -95,15 +97,24 @@ class GolfApp:
 
         self.connection.commit()
 
-    def on_close(self): # Method for all .protocols on new windows
+    # Go back to main menu
+    def back_to_login(self):
+        if self.create_frame:
+            self.create_frame.withdraw()
+        self.login_menu()
+
+    def on_close(self):  # Method for all .protocols on new windows
         self.app.quit()
 
+        # LOGIN AND CREATE USER MENU
+
+    # LOGIN MENU
     def login_menu(self):
         # withdrawing the root frame then creating a new window
         self.login_window = ctk.CTkToplevel(self.app)
         # setting the title size and a protocol for the new window
         self.login_window.title("Login")
-        self.login_window.geometry("325x375")
+        self.login_window.geometry("300x250")
         self.login_window.protocol("WM_DELETE_WINDOW", self.on_close)
         self.app.withdraw()
 
@@ -124,10 +135,47 @@ class GolfApp:
         self.login_btn.pack(pady=12, padx=10)
 
         # Create a user button
-        self.create_btn = ctk.CTkButton(self.login_frame, text='Create User')
+        self.create_btn = ctk.CTkButton(self.login_frame, text='Create User', command=self.create_menu)
         self.create_btn.pack(pady=12, padx=10)
 
-    def login(self): # Method to login
+    # CREATE MENU
+    def create_menu(self):
+        self.app.withdraw()
+        self.login_window.withdraw()
+
+        self.create_frame = ctk.CTkToplevel(self.app)
+        self.create_frame.title("Create")
+        self.create_frame.geometry("275x300")
+        self.create_frame.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # username entry
+        self.username_create = ctk.CTkEntry(self.create_frame, placeholder_text="Username")
+        self.username_create.pack(pady=8, padx=4)
+
+        # password entry
+        self.password_create = ctk.CTkEntry(self.create_frame, placeholder_text="Password")
+        self.password_create.pack(pady=8, padx=4)
+
+        # Confirm password entry
+        self.password_confirm = ctk.CTkEntry(self.create_frame, placeholder_text="Password")
+        self.password_confirm.pack(pady=8, padx=4)
+
+        # full name entry
+        self.full_name = ctk.CTkEntry(self.create_frame, placeholder_text="Full Name")
+        self.full_name.pack(pady=8, padx=4)
+
+        # Create submit button
+        self.submit = ctk.CTkButton(self.create_frame, text="Submit", command=self.create)
+        self.submit.pack(pady=8, padx=4)
+
+        # back to the login page button
+        self.back = ctk.CTkButton(self.create_frame, text="Back", command=self.back_to_login)
+        self.back.pack(pady=8, padx=4)
+
+        # LOGIN AND CREATE METHODS
+
+    # LOGIN
+    def login(self):  # Method to login
         username = self.username.get()
         password = self.password.get()
 
@@ -153,12 +201,42 @@ class GolfApp:
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
+    # CREATE
+    def create(self):
+        username = self.username_create.get()
+        password = self.password_create.get()
+        password_confirm = self.password_confirm.get()
+        full_name = self.full_name.get()
+
+        self.cursor.execute("SELECT username FROM users WHERE username = %s",
+                            (username,))
+        existing_user = self.cursor.fetchone()  # grabbing a user if one exists
+
+        if existing_user:  # checking to see if that username is taken
+            messagebox.showerror("Username already exists")
+            return
+
+        if password != password_confirm:
+            messagebox.showerror("Passwords do not match")
+            self.password.delete(0, tk.END)
+            self.password_confirm.delete(0, tk.END)
+            return
+
+        self.cursor.execute("INSERT INTO users (username, password, confirm_pass, full_name, connections, created_at) "
+                            "VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)",
+                            (username, password, password_confirm, full_name, "None"))
+        self.connection.commit()
+        messagebox.showinfo("Account created")
+
+        self.create_frame.withdraw()
+        self.login_menu()
 
 
 def main():
     golf = ctk.CTk()
     app = GolfApp(golf)
     golf.mainloop()
+
 
 if __name__ == "__main__":
     main()
