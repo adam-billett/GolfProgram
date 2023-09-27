@@ -8,6 +8,9 @@ class GUIManager:
         self.app = app
         self.db_manager = db_manager
 
+        self.main_frame = None
+        self.admin_frame = None
+
         self.initialize_gui()
 
     def on_close(self):  # Method for all .protocols on new windows
@@ -64,12 +67,12 @@ class GUIManager:
             self.current_user_role = user_info
             print(self.current_user_role)
             if self.current_user_role == "admin":
-                messagebox.showinfo("Welcome admin")
                 # Display admin menu
-                pass
+                self.logged_in = True
+                self.admin_menu()
             elif self.current_user_role == "user":
-                messagebox.showinfo("Welcome user")
-                pass
+                self.logged_in = True
+                self.user_menu()
                 # Display users menu
             else:
                 messagebox.showerror("Error", "You have no role")
@@ -134,13 +137,19 @@ class GUIManager:
             messagebox.showerror("Error", "Username already exists")
 
     # MAIN MENU
-    def main_menu(self):
-        self.login_window.withdraw()
+    def user_menu(self):
+        # IF ROLE IS A USER THIS IS THE MAIN MENU
+        self.login_window.withdraw()  # withdrawing the login menu
 
+        # Making a new frame for the users menu
         self.main_frame = ctk.CTkToplevel(self.app)
         self.main_frame.title("Golf Now")
         self.main_frame.geometry("500x500")
         self.main_frame.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # Displaying the current user in the top
+        self.curr_user = ctk.CTkLabel(self.main_frame, text=self.username.get())
+        self.curr_user.pack(pady=8, padx=4)
 
         # Play golf Button
         self.play = ctk.CTkButton(self.main_frame, text="Play Golf")
@@ -170,8 +179,44 @@ class GUIManager:
         self.logout_btn = ctk.CTkButton(self.main_frame, text="Logout", command=self.logout)
         self.logout_btn.pack(pady=8, padx=4)
 
+    def admin_menu(self):
+        # IF ROLE IS ADMIN THIS IS THE MAIN MENU
+
+        self.login_window.withdraw()  # Withdrawing the login menu
+
+        #  Making a new frame for the admins menu
+        self.admin_frame = ctk.CTkToplevel(self.app)
+        self.admin_frame.title("Admin")
+        self.admin_frame.geometry("500x500")
+        self.admin_frame.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # Displaying the current user in the top
+        self.curr_user = ctk.CTkLabel(self.admin_frame, text=self.username.get())
+        self.curr_user.pack(pady=8, padx=4)
+
+        # Adjust roles button
+        self.adjust_roles = ctk.CTkButton(self.admin_frame, text="User Roles")
+        self.adjust_roles.pack(pady=8, padx=4)
+
+        # Add courses button
+        self.add_course = ctk.CTkButton(self.admin_frame, text="Add Course")
+        self.add_course.pack(pady=8, padx=4)
+
+        # Logout button
+        self.logout_adm = ctk.CTkButton(self.admin_frame, text="Logout", command=self.logout)
+        self.logout_adm.pack(pady=8, padx=4)
+
+
+
+
     # Method to logout from the program
     def logout(self):
-        self.main_frame.withdraw()
+        if self.admin_frame:
+            self.admin_frame.withdraw()
+            self.admin_frame = None
+        elif self.main_frame:
+            self.main_frame.withdraw()
+            self.main_frame = None
 
         self.initialize_gui()
+

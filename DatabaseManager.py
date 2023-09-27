@@ -91,6 +91,16 @@ class DatabaseManager:
 
         self.connection.commit()
 
+    # Method to grab the users role
+    def get_role(self):
+        self.cursor.execute("SELECT role FROM users WHERE username = %s", (str(self.current_user),))
+        return self.cursor.fetchone()
+
+    # Method to get the current users ID
+    def get_curr_user_id(self):
+        self.cursor.execute("SELECT user_id FROM users WHERE username = %s", (str(self.current_user),))
+        return self.cursor.fetchone()
+
     # Login method with logic to ensure they are a user
     def login(self, username, password):
         try:
@@ -100,6 +110,7 @@ class DatabaseManager:
 
             if result:
                 role = result[1]
+                self.current_user = username
                 return role  # Login Successful
 
             return None  # Login Failed
