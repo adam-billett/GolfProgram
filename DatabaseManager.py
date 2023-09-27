@@ -33,8 +33,8 @@ class DatabaseManager:
                         user_id SERIAL PRIMARY KEY,
                         username VARCHAR,
                         password VARCHAR,
-                        role VARCHAR,
                         confirm_pass VARCHAR,
+                        role VARCHAR,
                         full_name VARCHAR,
                         connections VARCHAR,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -91,6 +91,14 @@ class DatabaseManager:
 
         self.connection.commit()
 
+    # GRABBING ALL METHODS
+    # Method to populate a list of users
+    def get_all_users(self):
+        self.cursor.execute("SELECT username FROM users")
+        users = self.cursor.fetchall()
+        usernames = [user[0] for user in users]
+        return usernames
+
     # Method to grab the users role
     def get_role(self):
         self.cursor.execute("SELECT role FROM users WHERE username = %s", (str(self.current_user),))
@@ -142,8 +150,14 @@ class DatabaseManager:
         return True  # Creation successful
 
     # ADMIN METHODS
-    def user_roles(self):  # Admin method to adjust users roles
-        pass
+    def user_roles(self, role, username):  # Admin method to adjust users roles
+        try:
+            self.cursor.execute("UPDATE users SET role = %s WHERE username = %s",
+                                (role, username))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     def add_course(self):  # Admin method to add a course
         pass

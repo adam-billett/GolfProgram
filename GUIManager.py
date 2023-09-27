@@ -1,6 +1,9 @@
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
+
+import DatabaseManager as db
 
 
 class GUIManager:
@@ -12,6 +15,9 @@ class GUIManager:
         self.admin_frame = None
 
         self.initialize_gui()
+
+    def on_option(self, event, select_option):  # Drop down event
+        select_option = self.selected_option
 
     def on_close(self):  # Method for all .protocols on new windows
         self.app.quit()
@@ -195,7 +201,7 @@ class GUIManager:
         self.curr_user.pack(pady=8, padx=4)
 
         # Adjust roles button
-        self.adjust_roles = ctk.CTkButton(self.admin_frame, text="User Roles")
+        self.adjust_roles = ctk.CTkButton(self.admin_frame, text="User Roles", command=self.user_roles)
         self.adjust_roles.pack(pady=8, padx=4)
 
         # Add courses button
@@ -208,7 +214,59 @@ class GUIManager:
 
     # ADMIN METHODS
     def user_roles(self):  # Admin Method to adjust users roles
-        pass
+        # Get a list of all the users
+        users = self.db_manager.get_all_users()
+        # List of the roles to give a user
+        roles = ["Select a role", "user", "admin"]
+        # Drop down menu for them to select a user
+        users.insert(0, "Select a user")
+
+        # Setting the box to default display "Select a user"
+        self.selected_option = tk.StringVar(self.admin_frame)
+        self.selected_option.set("Select a user")
+
+        # Style for the drop-down menu
+        option_menu_style = ttk.Style()
+        option_menu_style.configure("Custom.TMenubutton", background="grey", padding=5)
+        option_menu_style.configure("Custom.TMenubutton.TButton", relief="flat")
+
+        # Setting the style for the drop-down menu
+        option_menu = ttk.OptionMenu(self.admin_frame, self.selected_option, *users, style="Custom.TMenubutton")
+        option_menu.pack(pady=8, padx=4)
+
+        # Event when they click the option it updates the drop-down
+        option_menu.bind("<ButtonRelease-1>", lambda event, arg=self.selected_option: self.on_option(event, arg))
+
+        self.role_type = tk.StringVar(self.admin_frame)
+        self.role_type.set("Select a role")
+
+        # Styling for the drop-down menu
+        option_menu_style = ttk.Style()
+        option_menu_style.configure("Custom.TMenubutton", background="grey", padding=5)
+        option_menu_style.configure("Custom.TMenubutton.TButton", relief="flat")
+
+        # Setting the style for the drop-down menu
+        option_menu = ttk.OptionMenu(self.admin_frame, self.role_type, *roles, style="Custom.TMenubutton")
+        option_menu.pack(pady=8, padx=4)
+
+        # Event when they click the option it updates the drop-down
+        option_menu.bind("<ButtonRelease-1>",
+                         lambda event, arg=self.role_type: self.on_option(event, arg))
+
+        # Button to submit the updated role to the user they selected
+        self.update_btn = ctk.CTkButton(self.admin_frame, text="Update", command=self.update_role)
+        self.update_btn.pack(pady=8, padx=4)
+
+    def update_role(self):  # Method to update the users role
+        username = self.selected_option.get()
+        role = self.role_type.get()
+
+        updated = self.db_manager.user_roles(role, username)
+        if updated:
+            messagebox.showinfo("Success", "users role has been updated")
+        else:
+            print(username, role)
+            messagebox.showerror("Error", "idk something happened")
 
     def add_course(self):  # Admin Method to add a course
         pass
