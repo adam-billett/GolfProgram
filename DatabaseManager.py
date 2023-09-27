@@ -99,7 +99,7 @@ class DatabaseManager:
             result = self.cursor.fetchone()
 
             if result:
-                role = result
+                role = result[1]
                 return role  # Login Successful
 
             return None  # Login Failed
