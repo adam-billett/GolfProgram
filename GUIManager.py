@@ -204,7 +204,7 @@ class GUIManager:
         self.adjust_roles.pack(pady=8, padx=4)
 
         # Add courses button
-        self.add_course = ctk.CTkButton(self.admin_frame, text="Add Course")
+        self.add_course = ctk.CTkButton(self.admin_frame, text="Add Course", command=self.add_course)
         self.add_course.pack(pady=8, padx=4)
 
         # Logout button
@@ -267,7 +267,48 @@ class GUIManager:
             messagebox.showerror("Error", "idk something happened")
 
     def add_course(self):  # Admin Method to add a course
-        pass
+        self.admin_frame.withdraw()
+
+        self.add_frame = ctk.CTkToplevel(self.app)
+        self.add_frame.geometry("500x500")
+        self.add_frame.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # Course name entry box
+        self.course_name = ctk.CTkEntry(self.add_frame, placeholder_text="Course Name")
+        self.course_name.pack(pady=8, padx=4)
+
+        # Location entry box
+        self.location = ctk.CTkEntry(self.add_frame, placeholder_text="Location")
+        self.location.pack(pady=8, padx=4)
+
+        # Rates entry box
+        self.rates = ctk.CTkEntry(self.add_frame, placeholder_text="Rates")
+        self.rates.pack(pady=8, padx=4)
+
+        # Par entry box
+        self.par = ctk.CTkEntry(self.add_frame, placeholder_text="Par")
+        self.par.pack(pady=8, padx=4)
+
+        # tee times entry box
+        self.tee_times = ctk.CTkEntry(self.add_frame, placeholder_text="Tee Times")
+        self.tee_times.pack(pady=8, padx=4)
+
+        # Submit button
+        self.submit_btn = ctk.CTkButton(self.add_frame, text="Submit", command=self.submit_course)
+        self.submit_btn.pack(pady=8, padx=4)
+
+    def submit_course(self):
+        name = self.course_name.get()
+        location = self.location.get()
+        rates = self.rates.get()
+        par = self.par.get()
+        times = self.tee_times.get()
+
+        submitted = self.db_manager.add_course(name, location, rates, par, times)
+        if submitted:
+            messagebox.showinfo("Success", "New course added")
+        else:
+            messagebox.showerror("Error", "idk something messed up yo")
 
     # USER METHODS
 

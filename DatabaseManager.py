@@ -160,8 +160,14 @@ class DatabaseManager:
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
-    def add_course(self):  # Admin method to add a course
-        pass
+    def add_course(self, name, location, rate, par, tee_time):  # Admin method to add a course
+        try:
+            self.cursor.execute("INSERT INTO courses (course_name, location, rates, par, tee_times) VALUES (%s, %s, %s, %s, %s)",
+                                (name, location, rate, par, tee_time))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     # USER METHODS
     def play_golf(self):  # User method to play a round of golf
