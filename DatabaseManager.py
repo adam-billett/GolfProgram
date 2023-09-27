@@ -5,6 +5,7 @@ import psycopg2
 
 class DatabaseManager:
     def __init__(self, dbname, user, password, host, port):
+        self.current_user = None
         self.dbname = dbname
         self.user = user
         self.password = password
@@ -180,4 +181,3 @@ class DatabaseManager:
 
     def golf_insights(self):  # User method to get tips/ insights of their golf game
         pass
-

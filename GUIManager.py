@@ -71,7 +71,6 @@ class GUIManager:
         if user_info is not None:
             # Login Successful
             self.current_user_role = user_info
-            print(self.current_user_role)
             if self.current_user_role == "admin":
                 # Display admin menu
                 self.logged_in = True
@@ -265,7 +264,6 @@ class GUIManager:
         if updated:
             messagebox.showinfo("Success", "users role has been updated")
         else:
-            print(username, role)
             messagebox.showerror("Error", "idk something happened")
 
     def add_course(self):  # Admin Method to add a course
