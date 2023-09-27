@@ -141,3 +141,29 @@ class DatabaseManager:
 
         return True  # Creation successful
 
+    # ADMIN METHODS
+    def user_roles(self):  # Admin method to adjust users roles
+        pass
+
+    def add_course(self):  # Admin method to add a course
+        pass
+
+    # USER METHODS
+    def play_golf(self):  # User method to play a round of golf
+        pass
+
+    def golf_rounds(self):  # User method to check past rounds of golf
+        pass
+
+    def golf_sim(self):  # User method to go into the golf simulator
+        pass
+
+    def swing_analysis(self):  # User method to get a swing analysis
+        pass
+
+    def fitness_golf(self):  # User method to get into the fitness portion
+        pass
+
+    def golf_insights(self):  # User method to get tips/ insights of their golf game
+        pass
+

@@ -206,8 +206,32 @@ class GUIManager:
         self.logout_adm = ctk.CTkButton(self.admin_frame, text="Logout", command=self.logout)
         self.logout_adm.pack(pady=8, padx=4)
 
+    # ADMIN METHODS
+    def user_roles(self):  # Admin Method to adjust users roles
+        pass
 
+    def add_course(self):  # Admin Method to add a course
+        pass
 
+    # USER METHODS
+
+    def play_golf(self):  # User method to play a round of golf
+        pass
+
+    def golf_rounds(self):  # User method to check out past rounds of golf
+        pass
+
+    def golf_sim(self):  # User method to go into the golf simulator
+        pass
+
+    def swing_analysis(self):  # User method to get into the swing analysis
+        pass
+
+    def fitness_golf(self):  # User method to get into the fitness portion
+        pass
+
+    def golf_insights(self):  # User method to get into tips/ insight of their golf game
+        pass
 
     # Method to logout from the program
     def logout(self):
