@@ -307,6 +307,9 @@ class GUIManager:
         submitted = self.db_manager.add_course(name, location, rates, par, times)
         if submitted:
             messagebox.showinfo("Success", "New course added")
+            self.add_frame.withdraw()
+            self.admin_frame.deiconify()
+
         else:
             messagebox.showerror("Error", "idk something messed up yo")
 
