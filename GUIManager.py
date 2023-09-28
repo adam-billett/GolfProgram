@@ -368,10 +368,14 @@ class GUIManager:
 
         # Next Hole button
         self.next_hole = ctk.CTkButton(self.play_frame, text="Next")
-        self.next_hole.pack(pady=8, padx=4, side="right")
+        self.next_hole.pack(pady=20, padx=15, side="right")
         # Previous Hole button
         self.previous_hole = ctk.CTkButton(self.play_frame, text="Back")
-        self.previous_hole.pack(pady=8, padx=4, side="left")
+        self.previous_hole.pack(pady=20, padx=15, side="left")
+
+        # Finish the round button
+        self.finish = ctk.CTkButton(self.play_frame, text="Finish")
+        self.finish.pack(pady=8, padx=4, side="bottom")
 
     def golf_rounds(self):  # User method to check out past rounds of golf
         pass

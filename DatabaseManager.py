@@ -79,6 +79,16 @@ class DatabaseManager:
                 ''')
 
         self.cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS round_hole (
+                        round_hole_id SERIAL PRIMARY KEY,
+                        round_id INT REFERENCES rounds(round_id),
+                        hole_id INT REFERENCES holes(hole_id),
+                        score INT,
+                        CONSTRAINT uq_round_hole UNIQUE (round_id, hole_id)
+                    )
+                ''')
+
+        self.cursor.execute('''
                     CREATE TABLE IF NOT EXISTS monitor (
                         session_id SERIAL PRIMARY KEY,
                         user_id INT REFERENCES users(user_id),
@@ -194,7 +204,7 @@ class DatabaseManager:
             messagebox.showerror("Error", str(e))
 
     # USER METHODS
-    def play_golf(self):  # User method to play a round of golf
+    def play_golf(self, holes, score, par, difference):  # User method to play a round of golf
         pass
 
     def golf_rounds(self):  # User method to check past rounds of golf
