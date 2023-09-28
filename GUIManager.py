@@ -20,10 +20,16 @@ class GUIManager:
     def on_option_adv(self, *args):  # Drop down event to pull all the course info when the user selects their option
         selected_course = self.selected_option.get()
         if selected_course != "Select a course":
-            course_info = self.db_manager.load_course(selected_course)
-            return(course_info)
+            self.display_name(selected_course)
 
-    def on_close(self):  # Method for all .protocols on new windows
+    def display_name(self, selected_course):  # Display the name of the course after the user selects the course
+        if hasattr(self, "name_label"):
+            self.name_label.destroy()
+
+        self.name_label = ctk.CTkLabel(self.play_frame, text=selected_course)
+        self.name_label.pack(pady=8, padx=4)
+
+    def on_close(self):  # Method for all protocols on new windows
         self.app.quit()
 
     def back_to_login(self):  # Back to the login screen after the user creates a new user
@@ -354,13 +360,11 @@ class GUIManager:
         self.selected_option.trace_add('write', self.on_option_adv)
 
         option_menu_style = ttk.Style()
-        option_menu_style.configure("Custom.TMenubutton", backgroud="grey", padding=5)
+        option_menu_style.configure("Custom.TMenubutton", background="white", padding=5)
         option_menu_style.configure("Custom.TMenubutton.TButton", relief="flat")
 
         option_menu = ttk.OptionMenu(self.play_frame, self.selected_option, *course_list, style="Custom.TMenubutton")
         option_menu.pack(pady=8, padx=4)
-
-        option_menu.bind("<ButtonRelease-1>", lambda event, arg=self.selected_option: self.on_option(event, arg))
 
         # Next Hole button
         self.next_hole = ctk.CTkButton(self.play_frame, text="Next")
