@@ -3,8 +3,6 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 
-import DatabaseManager as db
-
 
 class GUIManager:
     def __init__(self, app, db_manager):
@@ -19,6 +17,12 @@ class GUIManager:
     def on_option(self, event, select_option):  # Drop down event
         select_option = self.selected_option
 
+    def on_option_adv(self, *args):  # Drop down event to pull all the course info when the user selects their option
+        selected_course = self.selected_option.get()
+        if selected_course != "Select a course":
+            course_info = self.db_manager.load_course(selected_course)
+            return(course_info)
+
     def on_close(self):  # Method for all .protocols on new windows
         self.app.quit()
 
@@ -26,6 +30,11 @@ class GUIManager:
         if self.create_frame:
             self.create_frame.withdraw()
         self.initialize_gui()
+
+    def back_to_main(self):  # Back from add course to the admin menu method
+        if self.add_frame:
+            self.add_frame.withdraw()
+        self.admin_frame.deiconify()
 
     # Login menu (The first window to show)
     def initialize_gui(self):
@@ -57,6 +66,11 @@ class GUIManager:
         # Create a user button
         self.create_btn = ctk.CTkButton(self.login_frame, text='Create User', command=self.create_menu)
         self.create_btn.pack(pady=12, padx=10)
+
+        self.username.bind("<Return>", lambda event: self.login())  # Binding the enter key to log in when the cursor
+        # is in the username field
+        self.password.bind("<Return>", lambda event: self.login())  # Binding the enter key to log in when the cursor
+        # is in the password field
 
     # Login verification
     def login(self):
@@ -157,7 +171,7 @@ class GUIManager:
         self.curr_user.pack(pady=8, padx=4)
 
         # Play golf Button
-        self.play = ctk.CTkButton(self.main_frame, text="Play Golf")
+        self.play = ctk.CTkButton(self.main_frame, text="Play Golf", command=self.play_golf)
         self.play.pack(pady=8, padx=4)
 
         # Check past rounds of golf button
@@ -186,7 +200,7 @@ class GUIManager:
 
     def admin_menu(self):
         # IF ROLE IS ADMIN THIS IS THE MAIN MENU
-
+        self.app.withdraw()
         self.login_window.withdraw()  # Withdrawing the login menu
 
         #  Making a new frame for the admins menu
@@ -268,6 +282,7 @@ class GUIManager:
 
     def add_course(self):  # Admin Method to add a course
         self.admin_frame.withdraw()
+        self.app.withdraw()
 
         self.add_frame = ctk.CTkToplevel(self.app)
         self.add_frame.geometry("500x500")
@@ -297,6 +312,9 @@ class GUIManager:
         self.submit_btn = ctk.CTkButton(self.add_frame, text="Submit", command=self.submit_course)
         self.submit_btn.pack(pady=8, padx=4)
 
+        self.back_btn = ctk.CTkButton(self.add_frame, text="Back", command=self.back_to_main)
+        self.back_btn.pack(pady=8, padx=4)
+
     def submit_course(self):
         name = self.course_name.get()
         location = self.location.get()
@@ -316,7 +334,40 @@ class GUIManager:
     # USER METHODS
 
     def play_golf(self):  # User method to play a round of golf
-        pass
+        # TODO: eventually pull from an API and have it fill in all the info for the courses
+        self.main_frame.withdraw()
+        self.app.withdraw()
+
+        self.play_frame = ctk.CTkToplevel(self.app)
+        self.play_frame.geometry("500x500")
+        self.play_frame.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # Drop down list to select the course
+        courses = self.db_manager.get_courses()
+        course_list = [course[0] for course in courses]
+
+        course_list.insert(0, "Select a course")
+
+        self.selected_option = tk.StringVar(self.play_frame)
+        self.selected_option.set("Select a course")
+
+        self.selected_option.trace_add('write', self.on_option_adv)
+
+        option_menu_style = ttk.Style()
+        option_menu_style.configure("Custom.TMenubutton", backgroud="grey", padding=5)
+        option_menu_style.configure("Custom.TMenubutton.TButton", relief="flat")
+
+        option_menu = ttk.OptionMenu(self.play_frame, self.selected_option, *course_list, style="Custom.TMenubutton")
+        option_menu.pack(pady=8, padx=4)
+
+        option_menu.bind("<ButtonRelease-1>", lambda event, arg=self.selected_option: self.on_option(event, arg))
+
+        # Next Hole button
+        self.next_hole = ctk.CTkButton(self.play_frame, text="Next")
+        self.next_hole.pack(pady=8, padx=4, side="right")
+        # Previous Hole button
+        self.previous_hole = ctk.CTkButton(self.play_frame, text="Back")
+        self.previous_hole.pack(pady=8, padx=4, side="left")
 
     def golf_rounds(self):  # User method to check out past rounds of golf
         pass

@@ -32,26 +32,39 @@ class DatabaseManager:
         self.cursor.execute('''
                     CREATE TABLE IF NOT EXISTS users (
                         user_id SERIAL PRIMARY KEY,
-                        username VARCHAR,
-                        password VARCHAR,
-                        confirm_pass VARCHAR,
-                        role VARCHAR,
-                        full_name VARCHAR,
-                        connections VARCHAR,
+                        username VARCHAR(255) NOT NULL UNIQUE,
+                        password VARCHAR(255) NOT NULL,
+                        confirm_pass VARCHAR(255),
+                        role VARCHAR(255),
+                        full_name VARCHAR(255),
+                        connections VARCHAR(255),
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                        )
-                    ''')
+                    )
+                ''')
 
         self.cursor.execute('''
                     CREATE TABLE IF NOT EXISTS courses (
                         course_id SERIAL PRIMARY KEY,
-                        course_name VARCHAR,
-                        location VARCHAR,
-                        rates BIGINT,
+                        course_name VARCHAR(255) NOT NULL,
+                        location VARCHAR(255),
+                        rates DECIMAL(10, 2),
                         par INT,
                         tee_times BIGINT
-                        )
-                    ''')
+                    )
+                ''')
+
+        self.cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS holes (
+                        hole_id SERIAL PRIMARY KEY,
+                        course_id INT,
+                        hole_num INT,
+                        par INT,
+                        distance INT,
+                        handicap INT,
+                        UNIQUE(course_id, hole_num),
+                        FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
+                    )
+                ''')
 
         self.cursor.execute('''
                     CREATE TABLE IF NOT EXISTS rounds (
@@ -69,24 +82,25 @@ class DatabaseManager:
                     CREATE TABLE IF NOT EXISTS monitor (
                         session_id SERIAL PRIMARY KEY,
                         user_id INT REFERENCES users(user_id),
-                        club_speed BIGINT,
-                        ball_speed BIGINT,
-                        spin_rate BIGINT,
-                        carry BIGINT,
-                        total BIGINT,
-                        smash_factor BIGINT,
-                        launch_angle BIGINT                           
+                        club_speed DECIMAL(6,2),
+                        ball_speed DECIMAL(6,2),
+                        spin_rate DECIMAL(6,2),
+                        carry DECIMAL(6,2),
+                        total DECIMAL(6,2),
+                        smash_factor DECIMAL(6,2),
+                        launch_angle DECIMAL(6,2),
+                        FOREIGN KEY (user_id) REFERENCES users(user_id)                           
                     )
                 ''')
 
         self.cursor.execute('''
                     CREATE TABLE IF NOT EXISTS fitness (
-                    exercise_id SERIAL PRIMARY KEY,
-                    user_id INT REFERENCES users(user_id),
-                    sets INT,
-                    reps INT,
-                    type VARCHAR,
-                    completed boolean
+                        exercise_id SERIAL PRIMARY KEY,
+                        user_id INT REFERENCES users(user_id),
+                        sets INT,
+                        reps INT,
+                        type VARCHAR(255),
+                        completed BOOLEAN
                     )
                 ''')
 
@@ -109,6 +123,16 @@ class DatabaseManager:
     def get_curr_user_id(self):
         self.cursor.execute("SELECT user_id FROM users WHERE username = %s", (str(self.current_user),))
         return self.cursor.fetchone()
+
+    # Method to get all the courses
+    def get_courses(self):
+        self.cursor.execute("SELECT course_name FROM courses")
+        return self.cursor.fetchall()
+
+    # Method to load in all the info on the course
+    def load_course(self, selected_option):
+        self.cursor.execute("SELECT * FROM courses WHERE course_name = %s", (selected_option,))
+        return self.cursor.fetchall()
 
     # Login method with logic to ensure they are a user
     def login(self, username, password):
