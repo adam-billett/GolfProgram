@@ -203,6 +203,15 @@ class DatabaseManager:
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
+    def add_hole(self, hole_num, par, distance, handicap):  # Admin method to add a hole
+        try:
+            self.cursor.execute("INSERT INTO holes (hole_num, par, distance, handicap) VALUES (%s, %s, %s, %s)",
+                                (hole_num, par, distance, handicap))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
     # USER METHODS
     def play_golf(self, holes, score, par, difference):  # User method to play a round of golf
         pass

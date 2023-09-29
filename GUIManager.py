@@ -23,11 +23,25 @@ class GUIManager:
             self.display_name(selected_course)
 
     def display_name(self, selected_course):  # Display the name of the course after the user selects the course
+        course_info = self.db_manager.load_course(self.selected_option.get())
         if hasattr(self, "name_label"):
             self.name_label.destroy()
 
+        # Name of the course label display after user selects the course
         self.name_label = ctk.CTkLabel(self.play_frame, text=selected_course)
         self.name_label.pack(pady=8, padx=4)
+
+        # Location of the course label displays after user selects the course
+        self.location_label = ctk.CTkLabel(self.play_frame, text=course_info[0][2])
+        self.location_label.pack(pady=8, padx=4, anchor="w")
+
+        # Par of the course label
+        self.par_label = ctk.CTkLabel(self.play_frame, text=course_info[0][4])
+        self.par_label.pack(pady=8, padx=4)
+
+        print(course_info)
+
+
 
     def on_close(self):  # Method for all protocols on new windows
         self.app.quit()
@@ -227,6 +241,9 @@ class GUIManager:
         self.add_course = ctk.CTkButton(self.admin_frame, text="Add Course", command=self.add_course)
         self.add_course.pack(pady=8, padx=4)
 
+        self.add_hole = ctk.CTkButton(self.admin_frame, text="Add hole", command=self.add_holes)
+        self.add_hole.pack(pady=8, padx=4)
+
         # Logout button
         self.logout_adm = ctk.CTkButton(self.admin_frame, text="Logout", command=self.logout)
         self.logout_adm.pack(pady=8, padx=4)
@@ -337,6 +354,46 @@ class GUIManager:
         else:
             messagebox.showerror("Error", "idk something messed up yo")
 
+    # Adding the holes for the course
+    def add_holes(self):
+        self.admin_frame.withdraw()
+        self.app.withdraw()
+
+        self.hole_frame = ctk.CTkToplevel(self.app)
+        self.hole_frame.geometry("500x500")
+        self.hole_frame.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        self.hole_num = ctk.CTkEntry(self.hole_frame, placeholder_text="Hole Number")
+        self.hole_num.pack(pady=8, padx=4)
+
+        self.hole_par = ctk.CTkEntry(self.hole_frame, placeholder_text="Par")
+        self.hole_par.pack(pady=8, padx=4)
+
+        self.distance = ctk.CTkEntry(self.hole_frame, placeholder_text="Distance")
+        self.distance.pack(pady=8, padx=4)
+
+        self.hanicap = ctk.CTkEntry(self.hole_frame, placeholder_text="Handicap")
+        self.hanicap.pack(pady=8, padx=4)
+
+        self.submit_hole = ctk.CTkButton(self.hole_frame, text="Submit")
+        self.submit_hole.pack(pady=8, padx=4)
+
+        courses = self.db_manager.get_courses()
+        course_list = [course[0] for course in courses]
+
+        course_list.insert(0, "Select a course")
+
+        self.selected_option = tk.StringVar(self.hole_frame)
+        self.selected_option.set("Select a course")
+
+        option_menu_style = ttk.Style()
+        option_menu_style.configure("Custom.TMenubutton", background="white", padding=5)
+        option_menu_style.configure("Custom.TMenubutton.TButton", relief="flat")
+
+        option_menu = ttk.OptionMenu(self.hole_frame, self.selected_option, *course_list, style="Custom.TMenubutton")
+        option_menu.pack(pady=8, padx=4)
+
+
     # USER METHODS
 
     def play_golf(self):  # User method to play a round of golf
@@ -376,6 +433,7 @@ class GUIManager:
         # Finish the round button
         self.finish = ctk.CTkButton(self.play_frame, text="Finish")
         self.finish.pack(pady=8, padx=4, side="bottom")
+
 
     def golf_rounds(self):  # User method to check out past rounds of golf
         pass
