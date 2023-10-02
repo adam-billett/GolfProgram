@@ -83,6 +83,7 @@ class DatabaseManager:
                         round_hole_id SERIAL PRIMARY KEY,
                         round_id INT REFERENCES rounds(round_id),
                         hole_id INT REFERENCES holes(hole_id),
+                        par INT,
                         score INT,
                         CONSTRAINT uq_round_hole UNIQUE (round_id, hole_id)
                     )
