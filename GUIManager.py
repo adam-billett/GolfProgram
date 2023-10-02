@@ -47,9 +47,9 @@ class GUIManager:
         self.par_label = ctk.CTkLabel(self.play_frame, text=course_info[0][4])
         self.par_label.pack(pady=8, padx=4)
 
-        print(course_info)
-
-
+    def clear_widgets(self):  # Method to clear out widgets in play golf frame
+        for widget in self.play_frame.winfo_children():
+            widget.destroy()
 
     def on_close(self):  # Method for all protocols on new windows
         self.app.quit()
@@ -459,7 +459,26 @@ class GUIManager:
         self.finish.pack(pady=8, padx=4, side="bottom")
 
     def go_next(self):  # User method to go to the next hole
-        pass
+        self.clear_widgets()  # clear off the current widgets on the frame
+        course = self.db_manager.get_course_id(self.selected_option.get())
+        hole_info = self.db_manager.load_holes(course)
+        hole_num = hole_info[0][2]
+        hole_par = hole_info[0][3]
+        distance = hole_info[0][4]
+        handicap = hole_info[0][5]
+
+        self.num_display = ctk.CTkLabel(self.play_frame, text=hole_num)
+        self.num_display.pack(pady=8, padx=4)
+
+        self.next_hole = ctk.CTkButton(self.play_frame, text="Next", command=self.go_next)
+        self.next_hole.pack(pady=20, padx=15, side="right")
+        # Previous Hole button
+        self.previous_hole = ctk.CTkButton(self.play_frame, text="Back")
+        self.previous_hole.pack(pady=20, padx=15, side="left")
+
+        # Finish the round button
+        self.finish = ctk.CTkButton(self.play_frame, text="Finish")
+        self.finish.pack(pady=8, padx=4, side="bottom")
 
 
     def golf_rounds(self):  # User method to check out past rounds of golf

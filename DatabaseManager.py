@@ -149,8 +149,9 @@ class DatabaseManager:
         return self.cursor.fetchall()
 
     # Method to load in the hole info
-    def load_holes(self):
-        pass
+    def load_holes(self, selected_option):
+        self.cursor.execute("SELECT * FROM holes WHERE course_id = %s", (selected_option,))
+        return self.cursor.fetchall()
 
     # Login method with logic to ensure they are a user
     def login(self, username, password):
