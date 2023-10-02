@@ -139,10 +139,18 @@ class DatabaseManager:
         self.cursor.execute("SELECT course_name FROM courses")
         return self.cursor.fetchall()
 
+    def get_course_id(self, selected_option):
+        self.cursor.execute("SELECT course_id FROM courses WHERE course_name = %s", (selected_option,))
+        return self.cursor.fetchone()
+
     # Method to load in all the info on the course
     def load_course(self, selected_option):
         self.cursor.execute("SELECT * FROM courses WHERE course_name = %s", (selected_option,))
         return self.cursor.fetchall()
+
+    # Method to load in the hole info
+    def load_holes(self):
+        pass
 
     # Login method with logic to ensure they are a user
     def login(self, username, password):
@@ -203,10 +211,10 @@ class DatabaseManager:
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
-    def add_hole(self, hole_num, par, distance, handicap):  # Admin method to add a hole
+    def add_hole(self, course, hole_num, par, distance, handicap):  # Admin method to add a hole
         try:
-            self.cursor.execute("INSERT INTO holes (hole_num, par, distance, handicap) VALUES (%s, %s, %s, %s)",
-                                (hole_num, par, distance, handicap))
+            self.cursor.execute("INSERT INTO holes (course_id, hole_num, par, distance, handicap) VALUES (%s, %s, %s, %s, %s)",
+                                (course, hole_num, par, distance, handicap))
             self.connection.commit()
             return True
         except Exception as e:

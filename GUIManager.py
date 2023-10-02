@@ -31,9 +31,17 @@ class GUIManager:
         self.name_label = ctk.CTkLabel(self.play_frame, text=selected_course)
         self.name_label.pack(pady=8, padx=4)
 
+        # Location Label
+        self.location_lbl = ctk.CTkLabel(self.play_frame, text="Location")
+        self.location_lbl.pack(pady=8, padx=4, anchor="w")
+
         # Location of the course label displays after user selects the course
         self.location_label = ctk.CTkLabel(self.play_frame, text=course_info[0][2])
         self.location_label.pack(pady=8, padx=4, anchor="w")
+
+        # Par Label
+        self.par = ctk.CTkLabel(self.play_frame, text="Par")
+        self.par.pack(pady=8, padx=4)
 
         # Par of the course label
         self.par_label = ctk.CTkLabel(self.play_frame, text=course_info[0][4])
@@ -375,7 +383,7 @@ class GUIManager:
         self.hanicap = ctk.CTkEntry(self.hole_frame, placeholder_text="Handicap")
         self.hanicap.pack(pady=8, padx=4)
 
-        self.submit_hole = ctk.CTkButton(self.hole_frame, text="Submit")
+        self.submit_hole = ctk.CTkButton(self.hole_frame, text="Submit", command=self.submit_hole)
         self.submit_hole.pack(pady=8, padx=4)
 
         courses = self.db_manager.get_courses()
@@ -386,12 +394,28 @@ class GUIManager:
         self.selected_option = tk.StringVar(self.hole_frame)
         self.selected_option.set("Select a course")
 
+
         option_menu_style = ttk.Style()
         option_menu_style.configure("Custom.TMenubutton", background="white", padding=5)
         option_menu_style.configure("Custom.TMenubutton.TButton", relief="flat")
 
         option_menu = ttk.OptionMenu(self.hole_frame, self.selected_option, *course_list, style="Custom.TMenubutton")
         option_menu.pack(pady=8, padx=4)
+
+    def submit_hole(self):  # Method to confirm adding a hole
+        course = self.selected_option.get()
+        course_id = self.db_manager.get_course_id(course)
+        hole = self.hole_num.get()
+        par = self.hole_par.get()
+        distance = self.distance.get()
+        handicap = self.hanicap.get()
+
+        submitted = self.db_manager.add_hole(course_id, hole, par, distance, handicap)
+
+        if submitted:
+            messagebox.showinfo("Success", "hole added")
+        else:
+            messagebox.showerror("Error", "idk something messed up yo")
 
 
     # USER METHODS
@@ -424,7 +448,7 @@ class GUIManager:
         option_menu.pack(pady=8, padx=4)
 
         # Next Hole button
-        self.next_hole = ctk.CTkButton(self.play_frame, text="Next")
+        self.next_hole = ctk.CTkButton(self.play_frame, text="Next", command=self.go_next)
         self.next_hole.pack(pady=20, padx=15, side="right")
         # Previous Hole button
         self.previous_hole = ctk.CTkButton(self.play_frame, text="Back")
@@ -433,6 +457,9 @@ class GUIManager:
         # Finish the round button
         self.finish = ctk.CTkButton(self.play_frame, text="Finish")
         self.finish.pack(pady=8, padx=4, side="bottom")
+
+    def go_next(self):  # User method to go to the next hole
+        pass
 
 
     def golf_rounds(self):  # User method to check out past rounds of golf
@@ -460,4 +487,3 @@ class GUIManager:
             self.main_frame = None
 
         self.initialize_gui()
-
