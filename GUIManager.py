@@ -12,6 +12,8 @@ class GUIManager:
         self.main_frame = None
         self.admin_frame = None
 
+        self.num_count = -1
+
         self.initialize_gui()
 
     def on_option(self, event, select_option):  # Drop down event
@@ -451,7 +453,7 @@ class GUIManager:
         self.next_hole = ctk.CTkButton(self.play_frame, text="Next", command=self.go_next)
         self.next_hole.pack(pady=20, padx=15, side="right")
         # Previous Hole button
-        self.previous_hole = ctk.CTkButton(self.play_frame, text="Back")
+        self.previous_hole = ctk.CTkButton(self.play_frame, text="Back", command=self.go_back)
         self.previous_hole.pack(pady=20, padx=15, side="left")
 
         # Finish the round button
@@ -459,14 +461,16 @@ class GUIManager:
         self.finish.pack(pady=8, padx=4, side="bottom")
 
     def go_next(self):  # User method to go to the next hole
+        self.num_count += 1
         self.clear_widgets()  # clear off the current widgets on the frame
         course = self.db_manager.get_course_id(self.selected_option.get())
         hole_info = self.db_manager.load_holes(course)
         print(hole_info)
-        hole_num = hole_info[0][2]
-        hole_par = hole_info[0][3]
-        distance = hole_info[0][4]
-        handicap = hole_info[0][5]
+        print(self.num_count)
+        hole_num = hole_info[self.num_count][2]
+        hole_par = hole_info[self.num_count][3]
+        distance = hole_info[self.num_count][4]
+        handicap = hole_info[self.num_count][5]
 
         # Hole label
         self.hole_label = ctk.CTkLabel(self.play_frame, text="Hole")
@@ -505,18 +509,68 @@ class GUIManager:
         self.next_hole = ctk.CTkButton(self.play_frame, text="Next", command=self.go_next)
         self.next_hole.pack(pady=20, padx=15, side="right")
         # Previous Hole button
-        self.previous_hole = ctk.CTkButton(self.play_frame, text="Back")
+        self.previous_hole = ctk.CTkButton(self.play_frame, text="Back", command=self.go_back)
         self.previous_hole.pack(pady=20, padx=15, side="left")
 
         # Finish the round button
         self.finish = ctk.CTkButton(self.play_frame, text="Finish")
         self.finish.pack(pady=8, padx=4, side="bottom")
 
-        hole_num += hole_info[0+1][2]
-        hole_par += hole_info[0+1][3]
-        distance += hole_info[0+1][4]
-        handicap += hole_info[0+1][5]
 
+    def go_back(self):
+        self.num_count -= 1
+        self.clear_widgets()  # clear off the current widgets on the frame
+        course = self.db_manager.get_course_id(self.selected_option.get())
+        hole_info = self.db_manager.load_holes(course)
+        print(hole_info)
+        print(self.num_count)
+        hole_num = hole_info[self.num_count][2]
+        hole_par = hole_info[self.num_count][3]
+        distance = hole_info[self.num_count][4]
+        handicap = hole_info[self.num_count][5]
+
+        # Hole label
+        self.hole_label = ctk.CTkLabel(self.play_frame, text="Hole")
+        self.hole_label.pack(pady=8, padx=4, side="left")
+        # Hole number display
+        self.num_display = ctk.CTkLabel(self.play_frame, text=hole_num)
+        self.num_display.pack(pady=8, padx=4, side="left")
+
+        # Par label
+        self.par_label = ctk.CTkLabel(self.play_frame, text="Par")
+        self.par_label.pack(pady=8, padx=4)
+        # Par number display
+        self.par_display = ctk.CTkLabel(self.play_frame, text=hole_par)
+        self.par_display.pack(pady=8, padx=4)
+
+        # Distance label
+        self.distance_lbl = ctk.CTkLabel(self.play_frame, text="Distance")
+        self.distance_lbl.pack(pady=8, padx=4, side="right")
+        # Distance display
+        self.distance_display = ctk.CTkLabel(self.play_frame, text=distance)
+        self.distance_display.pack(pady=8, padx=4, side="right")
+
+        # Handicap label
+        self.handicap_lbl = ctk.CTkLabel(self.play_frame, text="Handicap")
+        self.handicap_lbl.pack(pady=8, padx=4)
+        # Handicap display
+        self.handicap_display = ctk.CTkLabel(self.play_frame, text=handicap)
+        self.handicap_display.pack(pady=8, padx=4)
+
+        # Enry boxes for user input
+        # TODO: will have more indepth tracking/ stats for user to input ex. Green Regulation? putts: ? fairway hit? etc...
+        self.score_entry = ctk.CTkEntry(self.play_frame, placeholder_text="Score")
+        self.score_entry.pack(pady=8, padx=4)
+
+        self.next_hole = ctk.CTkButton(self.play_frame, text="Next", command=self.go_next)
+        self.next_hole.pack(pady=20, padx=15, side="right")
+        # Previous Hole button
+        self.previous_hole = ctk.CTkButton(self.play_frame, text="Back", command=self.go_back)
+        self.previous_hole.pack(pady=20, padx=15, side="left")
+
+        # Finish the round button
+        self.finish = ctk.CTkButton(self.play_frame, text="Finish")
+        self.finish.pack(pady=8, padx=4, side="bottom")
 
     def golf_rounds(self):  # User method to check out past rounds of golf
         pass
