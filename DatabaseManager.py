@@ -85,6 +85,7 @@ class DatabaseManager:
                         hole_id INT REFERENCES holes(hole_id),
                         par INT,
                         score INT,
+                        difference INT,
                         CONSTRAINT uq_round_hole UNIQUE (round_id, hole_id)
                     )
                 ''')
@@ -153,6 +154,13 @@ class DatabaseManager:
     def load_holes(self, selected_option):
         self.cursor.execute("SELECT * FROM holes WHERE course_id = %s", (selected_option,))
         return self.cursor.fetchall()
+
+    def get_round(self, selected_option):
+        self.cursor.execute("SELECT round_id FROM rounds WHERE course_id = %s", (selected_option,))
+        return self.cursor.fetchone()
+
+    def start_round(self, course_id):
+        self.cursor.execute("INSERT INTO rounds (course_id, user_id) VALUES (%s, %s)", (course_id, self.get_curr_user_id()))
 
     # Login method with logic to ensure they are a user
     def login(self, username, password):
@@ -223,8 +231,14 @@ class DatabaseManager:
             messagebox.showerror("Error", str(e))
 
     # USER METHODS
-    def play_golf(self, holes, score, par, difference):  # User method to play a round of golf
-        pass
+    def play_golf(self, rounds, hole, par, score, difference):  # User method to play a round of golf
+        try:
+            self.cursor.execute("INSERT INTO round_hole (round_id, hole_id, par, score, difference) VALUES (%s, %s, %s, %s, %s)",
+                                (rounds, hole, par, score, difference))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     def golf_rounds(self):  # User method to check past rounds of golf
         pass

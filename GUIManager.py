@@ -24,6 +24,12 @@ class GUIManager:
         if selected_course != "Select a course":
             self.display_name(selected_course)
 
+    def on_selected_option(self, *args):
+        selected_course = self.selected_option.get()
+        course = self.db_manager.get_course_id(selected_course)
+        if selected_course != "Select a course":
+            self.db_manager.start_round(course[0])
+
     def display_name(self, selected_course):  # Display the name of the course after the user selects the course
         course_info = self.db_manager.load_course(self.selected_option.get())
         if hasattr(self, "name_label"):
@@ -457,8 +463,10 @@ class GUIManager:
         self.previous_hole.pack(pady=20, padx=15, side="left")
 
         # Finish the round button
-        self.finish = ctk.CTkButton(self.play_frame, text="Finish")
+        self.finish = ctk.CTkButton(self.play_frame, text="Finish", command=self.submit_score)
         self.finish.pack(pady=8, padx=4, side="bottom")
+
+        self.selected_option.trace_add('write', self.on_selected_option)
 
     def go_next(self):  # User method to go to the next hole
         self.num_count += 1
@@ -513,7 +521,7 @@ class GUIManager:
         self.previous_hole.pack(pady=20, padx=15, side="left")
 
         # Finish the round button
-        self.finish = ctk.CTkButton(self.play_frame, text="Finish")
+        self.finish = ctk.CTkButton(self.play_frame, text="Finish", command=self.submit_score)
         self.finish.pack(pady=8, padx=4, side="bottom")
 
 
@@ -569,8 +577,27 @@ class GUIManager:
         self.previous_hole.pack(pady=20, padx=15, side="left")
 
         # Finish the round button
-        self.finish = ctk.CTkButton(self.play_frame, text="Finish")
+        self.finish = ctk.CTkButton(self.play_frame, text="Finish", command=self.submit_score)
         self.finish.pack(pady=8, padx=4, side="bottom")
+
+    def submit_score(self):
+        course = self.db_manager.get_course_id(self.selected_option.get())
+        hole_info = self.db_manager.load_holes(course)
+        par = hole_info[self.num_count][3]
+        course_id = hole_info[self.num_count][1]
+        score = self.score_entry.get()
+        difference = int(score) - int(par)
+        rounds = self.db_manager.get_round(course_id)
+        hole = hole_info[self.num_count][0]
+        print(course)
+        print(rounds)
+        print(course_id)
+
+
+        if self.db_manager.play_golf(rounds, hole, par, score, difference):
+            messagebox.showinfo("Success", "score added")
+        else:
+            messagebox.showerror("Error", "something didnt work")
 
     def golf_rounds(self):  # User method to check out past rounds of golf
         pass
