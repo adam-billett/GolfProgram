@@ -156,11 +156,12 @@ class DatabaseManager:
         return self.cursor.fetchall()
 
     def get_round(self, selected_option):
-        self.cursor.execute("SELECT round_id FROM rounds WHERE course_id = %s", (selected_option,))
+        self.cursor.execute("SELECT round_id FROM rounds WHERE course_id = %s ORDER BY round_id DESC LIMIT 1", (selected_option,))
         return self.cursor.fetchone()
 
     def start_round(self, course_id):
         self.cursor.execute("INSERT INTO rounds (course_id, user_id) VALUES (%s, %s)", (course_id, self.get_curr_user_id()))
+        self.connection.commit()
 
     # Login method with logic to ensure they are a user
     def login(self, username, password):
