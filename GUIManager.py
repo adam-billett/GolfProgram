@@ -12,6 +12,7 @@ class GUIManager:
         self.main_frame = None
         self.admin_frame = None
 
+        self.scores = []
         self.num_count = -1
 
         self.initialize_gui()
@@ -425,7 +426,6 @@ class GUIManager:
         else:
             messagebox.showerror("Error", "idk something messed up yo")
 
-
     # USER METHODS
 
     def play_golf(self):  # User method to play a round of golf
@@ -523,9 +523,15 @@ class GUIManager:
         self.finish = ctk.CTkButton(self.play_frame, text="Finish", command=self.submit_score)
         self.finish.pack(pady=8, padx=4, side="bottom")
 
-
     def go_back(self):
-        self.num_count -= 1
+        if self.num_count > 0:
+            self.num_count -= 1
+            if self.num_count in self.scores:
+                score = self.scores[self.num_count]
+                self.score_entry.delete(0, "end")
+                self.score_entry.insert(0, score)
+        else:
+            messagebox.showinfo("Info", "you are already on hole 1")
         self.clear_widgets()  # clear off the current widgets on the frame
         course = self.db_manager.get_course_id(self.selected_option.get())
         hole_info = self.db_manager.load_holes(course)
@@ -580,19 +586,22 @@ class GUIManager:
         self.finish.pack(pady=8, padx=4, side="bottom")
 
     def submit_score(self):
+        print("submitting round")
         course = self.db_manager.get_course_id(self.selected_option.get())
         hole_info = self.db_manager.load_holes(course)
-        par = hole_info[self.num_count][3]
         course_id = hole_info[self.num_count][1]
-        score = self.score_entry.get()
-        difference = int(score) - int(par)
         rounds = self.db_manager.get_round(course_id)
-        hole = hole_info[self.num_count][0]
 
-        if self.db_manager.play_golf(rounds, hole, par, score, difference):
-            messagebox.showinfo("Success", "score added")
-        else:
-            messagebox.showerror("Error", "something didnt work")
+        for i, score in enumerate(self.scores):
+            hole = hole_info[i][0]
+            par = hole_info[i][3]
+            difference = int(score) - int(par)
+            if self.db_manager.play_golf(rounds, hole, par, score, difference):
+                messagebox.showinfo("Success", "score added")
+            else:
+                messagebox.showerror("Error", "something didnt work")
+
+        self.scores = []
 
     def golf_rounds(self):  # User method to check out past rounds of golf
         pass
